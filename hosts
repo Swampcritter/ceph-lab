@@ -1,0 +1,4 @@
+# Ceph Nodes
+192.168.1.50  ceph-monitor
+192.168.1.51  ceph-osd1
+192.168.1.52  ceph-osd2

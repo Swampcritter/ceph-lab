@@ -1,0 +1,4 @@
+[ceph_nodes]
+ceph-monitor
+ceph-osd1
+ceph-osd2

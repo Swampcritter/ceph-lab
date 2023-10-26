@@ -1,0 +1,19 @@
+---
+- name: Prepare ceph nodes
+  hosts: ceph_nodes
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Clean /etc/hosts file
+      copy:
+        content: ""
+        dest: /etc/hosts
+
+    - name: Update /etc/hosts file
+      blockinfile:
+        path: /etc/hosts
+        block: |
+           127.0.0.1     localhost
+           192.168.1.50  ceph-monitor
+           192.168.1.51  ceph-osd1
+           192.168.1.52  ceph-osd2

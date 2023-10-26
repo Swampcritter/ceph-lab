@@ -1,0 +1,54 @@
+---
+- name: Prepare ceph nodes
+  hosts: ceph_nodes
+  become: yes
+  become_method: sudo
+  vars:
+    ceph_admin_user: cephadmin
+  tasks:
+    - name: Set timezone
+      timezone:
+        name: America/New_York
+
+    - name: Update system
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+    - name: Install common packages
+      apt:
+        name: [vim,git,bash-completion,lsb-release,wget,curl,chrony,lvm2]
+        state: present
+        update_cache: yes
+
+    - name: Create user if absent
+      user:
+        name: "{{ ceph_admin_user }}"
+        state: present
+        shell: /bin/bash
+        home: /home/{{ ceph_admin_user }}
+
+    - name: Add sudo access for the user
+      lineinfile:
+        path: /etc/sudoers
+        line: "{{ ceph_admin_user }} ALL=(ALL:ALL) NOPASSWD:ALL"
+        state: present
+        validate: visudo -cf %s
+
+    - name: Set authorized key taken from file to Cephadmin user
+      authorized_key:
+        user: "{{ ceph_admin_user }}"
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+   
+    - name: Install Docker
+      shell: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker-ce.list
+        apt update
+        apt install -qq -y docker-ce docker-ce-cli containerd.io
+
+    - name: Reboot server after update and configs
+      reboot:
+
